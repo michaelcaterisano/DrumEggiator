@@ -1,10 +1,9 @@
-//-----------------------------------------------------------------------------
-// BeatPeggiator 2.0
-//-----------------------------------------------------------------------------
-/*	
-		Held notes are tracked in a global array in the HandleMIDI() callback.
-		Notes are chosen and played back during the ProcessMIDI() callback.
-*/
+/**
+ * BeatPeggiator
+ * @author Michael Caterisano
+ * @license http://opensource.org/licenses/MIT MIT License
+ * @copyright 2020 Michael Caterisano
+ */
 
 var NeedsTimingInfo = true;
 var activeNotes = [];
@@ -74,17 +73,17 @@ function ProcessMIDI() {
 
   if (activeNotes.length != 0) {
     // get parameters
-    var division = GetParameter("Beat Division");
-    var numBeats = GetParameter("Number Of Notes");
+    var division = GetParameter('Beat Division');
+    var numBeats = GetParameter('Number Of Notes');
     var randomDelay =
-      Math.random() * ((GetParameter("Random Delay") / 100) * (1 / division));
+      Math.random() * ((GetParameter('Random Delay') / 100) * (1 / division));
 
     // calculate beat to schedule
     var lookAheadEnd = musicInfo.blockEndBeat;
 
     // calculate new positions if new beat
     if (newBeat) {
-      Trace("NEW BEAT/////////////////////");
+      Trace('NEW BEAT/////////////////////');
       //prevBeatPositions = beatPositions;
       //manualActiveNotes = [...activeNotes];
       beatMap = generateBeatMap(numBeats, division);
@@ -92,7 +91,7 @@ function ProcessMIDI() {
       beatPositions = getBeatPositions();
       newBeat = false;
       firstTime = false;
-      prevDenominator = GetParameter("Beats");
+      prevDenominator = GetParameter('Beats');
 
       var newBeatState = {
         //firstTime: firstTime,
@@ -127,7 +126,7 @@ function ProcessMIDI() {
     ) {
       // adjust for cycle
       if (musicInfo.cycling && nextBeat >= musicInfo.rightCycleBeat) {
-        Trace("RIGHT CYCLE-------------");
+        Trace('RIGHT CYCLE-------------');
 
         nextBeat -= cycleBeats;
         // wrap beatPositions around cycle
@@ -178,7 +177,7 @@ function Reset() {
 function getBeatPositions(nextBeat) {
   var musicInfo = GetTimingInfo();
   var positions = [];
-  var division = GetParameter("Beat Division");
+  var division = GetParameter('Beat Division');
   var denominator = getDenominator();
   var firstBeat = true;
   positions = delays.map((delay) => {
@@ -205,7 +204,7 @@ function getBeatPositions(nextBeat) {
 }
 //-----------------------------------------------------------------------------
 function getDenominator() {
-  var currentDenominator = GetParameter("Beats");
+  var currentDenominator = GetParameter('Beats');
   if (currentDenominator !== prevDenominator) {
     return prevDenominator;
   } else {
@@ -233,11 +232,11 @@ function setPrevBeat() {
 
 function sendNote(nextBeat, randomDelay) {
   var musicInfo = GetTimingInfo();
-  var division = GetParameter("Beat Division");
-  var noteOrder = GetParameter("Note Order");
-  var noteLength = (GetParameter("Note Length") / 100) * (1 / division);
+  var division = GetParameter('Beat Division');
+  var noteOrder = GetParameter('Note Order');
+  var noteLength = (GetParameter('Note Length') / 100) * (1 / division);
   var randomLength =
-    Math.random() * ((GetParameter("Random Length") / 100) * (1 / division));
+    Math.random() * ((GetParameter('Random Length') / 100) * (1 / division));
   sentNotes = [];
 
   if (availableNotes.length === 0) {
@@ -247,7 +246,7 @@ function sendNote(nextBeat, randomDelay) {
   //Trace("AVAILABLE: " + availableNotes.map((note) => note.pitch));
 
   if (availableNotes.length !== 0) {
-    var simultaneousNotes = GetParameter("Simultaneous Notes");
+    var simultaneousNotes = GetParameter('Simultaneous Notes');
     var iterations =
       simultaneousNotes > activeNotes.length
         ? activeNotes.length
@@ -258,7 +257,7 @@ function sendNote(nextBeat, randomDelay) {
       var selectedNote = chooseNote(noteOrder);
 
       while (sentNotes.includes(selectedNote.note.pitch)) {
-        Trace("WHILE: " + selectedNote.note.pitch);
+        Trace('WHILE: ' + selectedNote.note.pitch);
         selectedNote = chooseNote(noteOrder);
       }
 
@@ -283,15 +282,15 @@ function sendNote(nextBeat, randomDelay) {
       }
 
       Trace(
-        "NOTE: " +
+        'NOTE: ' +
           noteToSend.pitch +
-          " ON: " +
+          ' ON: ' +
           (nextBeat + randomDelay) +
-          " OFF: " +
+          ' OFF: ' +
           (nextBeat + noteLength + randomLength + randomDelay)
       );
     }
-    Trace("SENT: " + sentNotes.sort((a, b) => a - b));
+    Trace('SENT: ' + sentNotes.sort((a, b) => a - b));
     Trace(sentNotes.length === new Set(sentNotes).size);
   }
 
@@ -307,30 +306,30 @@ function getAndRemoveRandomItem(arr, noteOrder, currentPosition) {
 }
 
 //-----------------------------------------------------------------------------
-var noteOrders = ["up", "down", "random"];
+var noteOrders = ['up', 'down', 'random'];
 
 function chooseNote(noteOrder) {
   // if (availableNotes.length === 0) {
   //   availableNotes = [...activeNotes];
   // }
   if (availableNotes.length === 0) {
-    Trace("WAS ZERO");
+    Trace('WAS ZERO');
     availableNotes = [...activeNotes];
   }
   var order = noteOrders[noteOrder];
   var length = availableNotes.length;
-  if (order === "up") {
+  if (order === 'up') {
     //var index = step % length;
     return { note: availableNotes[0], index: 0 };
   }
-  if (order === "down") {
+  if (order === 'down') {
     //var index = Math.abs((step % length) - (length - 1));
     return {
       note: availableNotes[availableNotes.length - 1],
       index: availableNotes.length - 1,
     };
   }
-  if (order === "random") {
+  if (order === 'random') {
     var index = Math.floor(Math.random() * length);
     return { note: availableNotes[index], index: index };
   } else {
@@ -372,7 +371,7 @@ function generateNoteDelays(beatMap, offsetAmount) {
 
   for (var i = 0; i < beatMap.length; i++) {
     if (beatMap[i] === 1) {
-      output.push(offsetAmount * (i * GetParameter("Beats")));
+      output.push(offsetAmount * (i * GetParameter('Beats')));
     }
   }
   return output;
@@ -382,7 +381,7 @@ function ParameterChanged(param, value) {
   var musicInfo = GetTimingInfo();
   if (param === 0) {
     // Beat Division
-    if (value < GetParameter("Number Of Notes")) {
+    if (value < GetParameter('Number Of Notes')) {
       SetParameter(1, value);
     } else {
     }
@@ -396,8 +395,8 @@ function ParameterChanged(param, value) {
       currentPosition = 0;
       nextBeat = beatPositions[currentPosition];
     }
-    if (value > GetParameter("Beat Division")) {
-      SetParameter("Beat Division", value);
+    if (value > GetParameter('Beat Division')) {
+      SetParameter('Beat Division', value);
     }
   }
 
@@ -408,24 +407,24 @@ function ParameterChanged(param, value) {
 //-----------------------------------------------------------------------------
 var PluginParameters = [
   {
-    name: "Beat Division",
-    type: "linear",
+    name: 'Beat Division',
+    type: 'linear',
     minValue: 1,
     maxValue: 64,
     numberOfSteps: 63,
     defaultValue: 4,
   },
   {
-    name: "Number Of Notes",
-    type: "linear",
+    name: 'Number Of Notes',
+    type: 'linear',
     minValue: 1,
     maxValue: 64,
     numberOfSteps: 63,
     defaultValue: 4,
   },
   {
-    name: "Beats",
-    type: "linear",
+    name: 'Beats',
+    type: 'linear',
     minValue: 1,
     maxValue: 10,
     numberOfSteps: 9,
@@ -433,8 +432,8 @@ var PluginParameters = [
   },
 
   {
-    name: "Note Order",
-    type: "menu",
+    name: 'Note Order',
+    type: 'menu',
     valueStrings: noteOrders,
     minValue: 0,
     maxValue: 2,
@@ -443,8 +442,8 @@ var PluginParameters = [
   },
 
   {
-    name: "Simultaneous Notes",
-    type: "lin",
+    name: 'Simultaneous Notes',
+    type: 'lin',
     minValue: 1,
     maxValue: 16,
     numberOfSteps: 15,
@@ -452,9 +451,9 @@ var PluginParameters = [
   },
 
   {
-    name: "Note Length",
-    unit: "%",
-    type: "linear",
+    name: 'Note Length',
+    unit: '%',
+    type: 'linear',
     minValue: 1,
     maxValue: 200,
     defaultValue: 100.0,
@@ -462,9 +461,9 @@ var PluginParameters = [
   },
 
   {
-    name: "Random Length",
-    unit: "%",
-    type: "linear",
+    name: 'Random Length',
+    unit: '%',
+    type: 'linear',
     minValue: 0,
     maxValue: 200,
     numberOfSteps: 200,
@@ -472,9 +471,9 @@ var PluginParameters = [
   },
 
   {
-    name: "Random Delay",
-    unit: "%",
-    type: "linear",
+    name: 'Random Delay',
+    unit: '%',
+    type: 'linear',
     minValue: 0,
     maxValue: 200,
     numberOfSteps: 200,
